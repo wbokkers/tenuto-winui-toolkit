@@ -31,7 +31,7 @@ await TnWindow.CreateModalDialog(hWndMain)
 
 As you can see, you can await the ShowAsync call to wait for the dialog to close.
 
-To close a window from code hosting a control:
+To close a window hosting a control from code:
 
 ``` csharp
 TnWindow.CloseWindowWithContent(myControl); 
