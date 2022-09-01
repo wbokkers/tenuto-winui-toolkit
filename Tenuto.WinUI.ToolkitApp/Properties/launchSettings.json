@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Tenuto.WinUI.ToolkitApp (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Tenuto.WinUI.ToolkitApp (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
