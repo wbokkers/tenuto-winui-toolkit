@@ -11,7 +11,7 @@ The Toolkit demonstrates how to work with windows and dialogs in WinUI in a Buil
 
 To create a modal dialog:
 
-```csh
+```csharp
 // Get the hWnd of the main window that is the owner of the dialog. 
 // When in the main window, we can do: 
 var hWndMain = WinRT.Interop.WindowNative.GetWindowHandle(this);
@@ -30,7 +30,7 @@ As you can see, you can use the ShowAsync to wait for the dialog to close.
 
 To close a window hosting a control:
 
-``` csh
+``` csharp
 TnWindow.CloseWindowWithContent(myControl); 
 ```
 See the examples on how this can be used to close the window from the control that is hosted by the window.
