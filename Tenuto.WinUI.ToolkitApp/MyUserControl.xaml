@@ -7,6 +7,7 @@
         <TextBlock
             x:Name="MessageTb" HorizontalAlignment="Center" FontSize="24"
             Text="" />
+        <TextBox x:Name="PersonNameBox" Text="" Header="Enter your name" HorizontalAlignment="Center" Width="200"/>
         <Button HorizontalAlignment="Center" Click="CloseWindow">Close The Window</Button>
 
     </StackPanel>

@@ -16,14 +16,17 @@ To create a modal dialog:
 // When in the main window, we can do: 
 var hWndMain = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-// create your control (preferably a UserControl or a Page)
-var myControl = new TextBlock { Text = "Hello Modal Dialog"});
+// create your control
+// preferably this is a UserControl or a Page
+var myControl = new TextBlock { Text = "Hello Modal Dialog" };
 
 // Show the modal dialog and wait for it to close
 await TnWindow.CreateModalDialog(hWndMain)
     .WithTitle("Modal Dialog Window")
     .CenteredOnOwnerWindow(360, 360)
     .ShowAsync(myControl);
+
+// At this point, you can get results from your control
 ```
 
 As you can see, you can use the ShowAsync to wait for the dialog to close.

@@ -1,6 +1,8 @@
 ﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Tenuto.WinUI.Toolkit.Windowing;
 
@@ -24,14 +26,22 @@ namespace Tenuto.WinUI.ToolkitApp
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
             LayoutRoot.Background = new SolidColorBrush(Colors.LightGray);
-           
+
+            // Create the control to show in the dialog
+            var myControl = new MyUserControl("Hello Modal Dialog");
+
             // Show the modal dialog and wait for it to close
             await TnWindow.CreateModalDialog(hWnd)
                 .WithTitle("Modal Dialog Window")
                 .CenteredOnOwnerWindow(360, 360)
-                .ShowAsync(new MyUserControl("Hello Modal Dialog"));
+                .ShowAsync(myControl);
 
             LayoutRoot.Background = new SolidColorBrush(Colors.White);
+
+            // Get the input from the dialog
+            var nameEntered = myControl.NameEntered;
+
+            Debug.WriteLine("You entered: " + nameEntered);
 
         }
 

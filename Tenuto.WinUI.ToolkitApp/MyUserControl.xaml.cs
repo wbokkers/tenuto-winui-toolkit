@@ -11,6 +11,11 @@ public sealed partial class MyUserControl : UserControl
         MessageTb.Text = message;
     }
 
+    /// <summary>
+    /// Returns the input
+    /// </summary>
+    public string NameEntered => PersonNameBox.Text;
+   
     private void CloseWindow(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         // Use a utility method on TnWindow to close the window containing this content
