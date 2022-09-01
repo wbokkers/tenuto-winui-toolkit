@@ -29,7 +29,7 @@ await TnWindow.CreateModalDialog(hWndMain)
 // At this point, you can get results from your control
 ```
 
-As you can see, you can use the ShowAsync to wait for the dialog to close.
+As you can see, you can await the ShowAsync call to wait for the dialog to close.
 
 To close a window hosting a control:
 
