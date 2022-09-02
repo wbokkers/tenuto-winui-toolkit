@@ -5,6 +5,7 @@
 
     <Grid x:Name="LayoutRoot">
         <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button HorizontalAlignment="Center" Click="OpenContentDialogClick">Open Content Dialog</Button>
             <Button HorizontalAlignment="Center" Click="OpenModalDialogClick">Open Modal Dialog Window</Button>
             <Button HorizontalAlignment="Center" Click="OpenCompactWindowClick">Open Compact Window</Button>
             <Button HorizontalAlignment="Center" Click="OpenDefaultWindowClick">Open Default Window</Button>

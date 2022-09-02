@@ -1,7 +1,8 @@
 ﻿using System;
-namespace Tenuto.WinUI.Toolkit.Windowing;
 
-public static class WindowHandleExtensions
+namespace Tenuto.WinUI.Toolkit.WinApi;
+
+internal static class WindowHandleExtensions
 {
     public static void CenterWindowInRect(this IntPtr hWnd, double width, double height, Interop.RECT rect)
     {
@@ -11,8 +12,8 @@ public static class WindowHandleExtensions
         var h = (int)(height * scalingFactor);
         var centerX = (rect.left + rect.right) / 2;
         var centerY = (rect.bottom + rect.top) / 2;
-        var left = Math.Max(0, centerX - (w / 2)); // do not allow to go off screen
-        var top = Math.Max(0, centerY - (h / 2));
+        var left = Math.Max(0, centerX - w / 2); // do not allow to go off screen
+        var top = Math.Max(0, centerY - h / 2);
 
         Interop.SetWindowPos(hWnd, Interop.HWND_TOP,
                             left, top, w, h,
@@ -29,8 +30,8 @@ public static class WindowHandleExtensions
 
         var centerX = (info.rcMonitor.left + info.rcMonitor.right) / 2;
         var centerY = (info.rcMonitor.bottom + info.rcMonitor.top) / 2;
-        var left = centerX - (w / 2);
-        var top = centerY - (h / 2);
+        var left = centerX - w / 2;
+        var top = centerY - h / 2;
 
         Interop.SetWindowPos(hWnd, Interop.HWND_TOP,
                             left, top, w, h,

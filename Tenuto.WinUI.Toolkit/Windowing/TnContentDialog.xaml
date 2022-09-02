@@ -1,0 +1,29 @@
+﻿<UserControl
+    x:Class="Tenuto.WinUI.Toolkit.Windowing.TnContentDialog" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="using:Tenuto.WinUI.Toolkit.Windowing" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="RootGrid" MinWidth="240" MinHeight="140">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ContentControl x:Name="DialogContent" Margin="12" />
+
+        <Border
+            x:Name="ButtonBorder" Grid.Row="1"
+            Background="{ThemeResource SystemChromeMediumColor}">
+            <StackPanel
+                x:Name="ButtonPanel" HorizontalAlignment="Center" Orientation="Horizontal"
+                Spacing="12">
+                <Button
+                    x:Name="PrimaryButton" Width="120" Margin="4,8"
+                    Click="PrimaryButtonClicked" Visibility="Collapsed" />
+                <Button
+                    x:Name="SecondaryButton" Width="120" Margin="4,8"
+                    Click="SecondaryButtonClicked" Visibility="Collapsed" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

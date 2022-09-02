@@ -1,15 +1,18 @@
-﻿using Microsoft.UI.Windowing;
+﻿using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tenuto.WinUI.Toolkit.WinApi;
+using WinRT.Interop;
 
 namespace Tenuto.WinUI.Toolkit.Windowing;
 
 public partial class TnWindow : Window
 {
     private static readonly object _LockObject = new();
-    private static List<TnWindow> _ActiveWindows = new();
+    private static readonly List<TnWindow> _ActiveWindows = new();
     private readonly TaskCompletionSource _closeCompletion;
 
     private readonly IntPtr _hWnd;
@@ -22,16 +25,16 @@ public partial class TnWindow : Window
 
     private TnWindow(bool isCompact)
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
         _hWndOwner = IntPtr.Zero;
 
         // see https://devblogs.microsoft.com/premier-developer/the-danger-of-taskcompletionsourcet-class/
         _closeCompletion = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        _hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        _hWnd = WindowNative.GetWindowHandle(this);
 
-        var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hWnd);
+        var windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
         _appWindow = AppWindow.GetFromWindowId(windowId);
 
         if (isCompact)
@@ -66,33 +69,23 @@ public partial class TnWindow : Window
 
     public bool HasOwner => _hWndOwner != IntPtr.Zero;
 
-    public static TnWindow CreateCompact()
-    {
-        return new TnWindow(isCompact: true);
-    }
+    public static TnWindow CreateCompact() => new(isCompact: true);
 
-    public static TnWindow Create()
-    {
-        return new TnWindow(isCompact: false);
-    }
+    public static TnWindow Create() => new(isCompact: false);
+
+    public static TnWindow CreateModalDialog(Window ownerWindow) => CreateModalDialog(WindowNative.GetWindowHandle(ownerWindow));
 
     public static TnWindow CreateModalDialog(IntPtr hWndOwner)
     {
-        return TnWindow.Create()
+        return Create()
             .OwnedBy(hWndOwner)
             .WithModalBehavior()
             .WithAlwaysOnTopBehavior();
     }
-
-    public static TnWindow CreateNonModalDialog()
-    {
-        return TnWindow.Create()
-            .WithAlwaysOnTopBehavior();
-    }
-
+  
     public static TnWindow CreateNonModalDialog(IntPtr hWndOwner)
     {
-        return TnWindow.Create()
+        return Create()
             .OwnedBy(hWndOwner)
             .WithAlwaysOnTopBehavior();
     }
@@ -141,6 +134,8 @@ public partial class TnWindow : Window
             return null;
         }
     }
+
+    public TnWindow OwnedBy(Window ownerWindow) => OwnedBy(WindowNative.GetWindowHandle(ownerWindow));
 
     public TnWindow OwnedBy(IntPtr hWndOwner)
     {
@@ -191,6 +186,16 @@ public partial class TnWindow : Window
     public TnWindow CenteredOnScreen(double width, double height)
     {
         _hWnd.CenterWindowOnScreen(width, height);
+        return this;
+    }
+
+    public TnWindow WithBorderAndTitleBar(bool hasBorder = true, bool hasTitleBar = true)
+    {
+        if (_presenter is OverlappedPresenter presenter)
+        {
+            presenter.SetBorderAndTitleBar(hasBorder, hasTitleBar);
+        }
+
         return this;
     }
 
@@ -268,12 +273,24 @@ public partial class TnWindow : Window
         _hWnd.SetWindowSize(width, height);
     }
 
+    public TnWindow WithoutIcon()
+    {
+        try
+        {
+            // Change the extended window style to not show a window icon
+            var currentStyle = Interop.GetWindowLongPtr(_hWnd, Interop.GWL_EXSTYLE);
+            var newStyle = (int)currentStyle | Interop.WS_EX_DLGMODALFRAME;
+            Interop.SetWindowLongPtr(_hWnd, Interop.GWL_EXSTYLE, (IntPtr)newStyle);
+            Interop.SendMessage(_hWnd, Interop.WM_SETICON, 0, IntPtr.Zero);
+        }
+        catch { }
+        return this;
+    }
     public TnWindow WithIcon(string iconFileName, int desiredSize = 32)
     {
         try
         {
-            if (_icon == null)
-                _icon = NativeIcon.FromFile(iconFileName, 32);
+            _icon ??= NativeIcon.FromFile(iconFileName, desiredSize);
             Interop.SendMessage(_hWnd, Interop.WM_SETICON, 0, _icon.Handle);
         }
         catch

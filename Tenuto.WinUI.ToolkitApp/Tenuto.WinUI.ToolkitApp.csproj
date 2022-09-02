@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
@@ -10,8 +10,10 @@
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="EditNameView.xaml" />
     <None Remove="MyUserControl.xaml" />
   </ItemGroup>
 
@@ -41,6 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tenuto.WinUI.Toolkit\Tenuto.WinUI.Toolkit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="EditNameView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="MyUserControl.xaml">

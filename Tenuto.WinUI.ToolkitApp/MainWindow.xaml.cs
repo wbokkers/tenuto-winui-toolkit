@@ -11,11 +11,12 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         this.InitializeComponent();
+        _savedName = "";
     }
 
     private async void OpenModalDialogClick(object sender, RoutedEventArgs e)
     {
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        var ownerWindow = this;
 
         LayoutRoot.Background = new SolidColorBrush(Colors.LightGray);
 
@@ -23,22 +24,40 @@ public sealed partial class MainWindow : Window
         var myControl = new MyUserControl("Hello Modal Dialog");
 
         // Show the modal dialog and wait for it to close
-        await TnWindow.CreateModalDialog(hWnd)
+        await TnWindow.CreateModalDialog(ownerWindow)
             .WithTitle("Modal Dialog Window")
             .CenteredOnOwnerWindow(360, 360)
             .ShowAsync(myControl);
 
         LayoutRoot.Background = new SolidColorBrush(Colors.White);
+    }
 
-        // Get the input from the dialog
-        var nameEntered = myControl.NameEntered;
+    private string _savedName;
+    private async void OpenContentDialogClick(object sender, RoutedEventArgs e)
+    {
+        var editView = new EditNameView();
+        editView.NameInput = _savedName;
 
-        Debug.WriteLine("You entered: " + nameEntered);
+        var ownerWindow = this;
+
+        var dialog = new TnContentDialog(ownerWindow)
+        {
+            Title = "Name input",
+            PrimaryButtonText = "Save",
+            SecondaryButtonText = "Cancel",
+            Content = editView
+        };
+
+        var res = await dialog.ShowAsync();
+
+        if (res == TnContentDialogResult.PrimaryButtonClicked)
+        {
+            _savedName = editView.NameInput;
+        }
     }
 
     private void OpenCompactWindowClick(object sender, RoutedEventArgs e)
     {
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         // Open a compact window. Do not wait for it to close
         TnWindow.CreateCompact()
             .WithTitle("Compact Window")
@@ -59,13 +78,14 @@ public sealed partial class MainWindow : Window
 
     private void OpenWindowWithOwnerClick(object sender, RoutedEventArgs e)
     {
-        var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        var ownerWindow = this;
 
         // Open a default window. Do not wait for it to close
-        var window = TnWindow.Create()
-            .OwnedBy(hWnd)
+        TnWindow.Create()
+            .OwnedBy(ownerWindow)
             .WithTitle("Owned Window")
             .WithSize(400, 400)
             .Show(new MyUserControl("Hello Owned Window"));
     }
+
 }
