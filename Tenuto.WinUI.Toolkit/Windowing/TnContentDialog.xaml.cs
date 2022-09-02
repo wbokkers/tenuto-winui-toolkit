@@ -19,8 +19,8 @@ public sealed partial class TnContentDialog : UserControl
     private TnContentDialogResult _result;
     private TnWindow? _window;
 
-    public TnContentDialog(Window ownerWindow)
-       : this(WindowNative.GetWindowHandle(ownerWindow))
+    public TnContentDialog(Window ownerWindow, bool isModal = true)
+       : this(WindowNative.GetWindowHandle(ownerWindow), isModal)
     {
     }
 
@@ -32,7 +32,9 @@ public sealed partial class TnContentDialog : UserControl
             ? TnWindow.CreateModalDialog(hWndOwner)
             : TnWindow.CreateNonModalDialog(hWndOwner);
             
-        _window.WithoutIcon();
+        _window.WithoutIcon()
+            .WithSizeToFitContent()
+            .WithPlacement(TnWindowPlacement.CenteredOnOwnerWindow);
      
         _window.Closed += OnWindowClosed;
         _result = TnContentDialogResult.None;
@@ -48,8 +50,6 @@ public sealed partial class TnContentDialog : UserControl
 
     public async Task<TnContentDialogResult> ShowAsync()
     {
-        ResizeWindowForContent();
-
         if (_window == null)
             return _result;
 
@@ -57,28 +57,28 @@ public sealed partial class TnContentDialog : UserControl
         return _result;
     }
 
-    private void ResizeWindowForContent()
-    {
-        var width = MaxDialogWidth;
-        var height = MaxDialogHeight;
+    //private void ResizeWindowForContent()
+    //{
+    //    var width = MaxDialogWidth;
+    //    var height = MaxDialogHeight;
 
-        // Determine the desired size
-        if (_window != null && Content != null)
-        {
-            var bounds = _window.Bounds;
-            RootGrid.Measure(new Windows.Foundation.Size(bounds.Width, bounds.Height));
-            width = Math.Min(MaxDialogWidth, RootGrid.DesiredSize.Width + 16);
-            height = Math.Min(MaxDialogHeight, RootGrid.DesiredSize.Height + 40);
-        }
-        else if (Content != null)
-        {
-            RootGrid.Measure(new Windows.Foundation.Size(MaxDialogWidth, MaxDialogHeight));
-            width = RootGrid.DesiredSize.Width + 16;
-            height = RootGrid.DesiredSize.Height + 40;
-        }
+    //    // Determine the desired size
+    //    if (_window != null && Content != null)
+    //    {
+    //        var bounds = _window.Bounds;
+    //        RootGrid.Measure(new Windows.Foundation.Size(bounds.Width, bounds.Height));
+    //        width = Math.Min(MaxDialogWidth, RootGrid.DesiredSize.Width + 16);
+    //        height = Math.Min(MaxDialogHeight, RootGrid.DesiredSize.Height + 40);
+    //    }
+    //    else if (Content != null)
+    //    {
+    //        RootGrid.Measure(new Windows.Foundation.Size(MaxDialogWidth, MaxDialogHeight));
+    //        width = RootGrid.DesiredSize.Width + 16;
+    //        height = RootGrid.DesiredSize.Height + 40;
+    //    }
 
-        _window?.CenteredOnOwnerWindow(width, height);
-    }
+    //    _window?.DoCenterOnOwnerWindow(width, height);
+    //}
 
     public double MaxDialogWidth  { get;set; }
    

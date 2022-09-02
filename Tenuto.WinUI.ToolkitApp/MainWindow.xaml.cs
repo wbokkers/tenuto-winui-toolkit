@@ -26,7 +26,8 @@ public sealed partial class MainWindow : Window
         // Show the modal dialog and wait for it to close
         await TnWindow.CreateModalDialog(ownerWindow)
             .WithTitle("Modal Dialog Window")
-            .CenteredOnOwnerWindow(360, 360)
+            .WithSize(360,360)
+            .WithPlacement(TnWindowPlacement.CenteredOnOwnerWindow)
             .ShowAsync(myControl);
 
         LayoutRoot.Background = new SolidColorBrush(Colors.White);
@@ -35,12 +36,17 @@ public sealed partial class MainWindow : Window
     private string _savedName;
     private async void OpenContentDialogClick(object sender, RoutedEventArgs e)
     {
+        // Create a view to show in the dialog
+        // In this example we use a view with a property NameInput
         var editView = new EditNameView();
         editView.NameInput = _savedName;
 
+        // Select the owner window. A modal dialog needs an owner window.
         var ownerWindow = this;
 
-        var dialog = new TnContentDialog(ownerWindow)
+        // Create the dialog containing a title, two buttons, and our view 
+        // We want our dialog to have modal behavior
+        var dialog = new TnContentDialog(ownerWindow, isModal: true)
         {
             Title = "Name input",
             PrimaryButtonText = "Save",
@@ -48,8 +54,10 @@ public sealed partial class MainWindow : Window
             Content = editView
         };
 
+        // Show the dialog and wait for it to close
         var res = await dialog.ShowAsync();
 
+        // When the 'Save' button was clicked, we save the input
         if (res == TnContentDialogResult.PrimaryButtonClicked)
         {
             _savedName = editView.NameInput;
@@ -58,23 +66,19 @@ public sealed partial class MainWindow : Window
 
     private void OpenCompactWindowClick(object sender, RoutedEventArgs e)
     {
-        // Open a compact window. Do not wait for it to close
+        // Open a compact window,
+        // with no icon and owned by this window.
+        // Do not wait for it to close
         TnWindow.CreateCompact()
+            .WithoutIcon()
+            .WithOwner(this)
             .WithTitle("Compact Window")
-            .BottomRightAlignedOnScreen(400, 300)
+            .WithSize(400,300)
+            .WithPlacement(TnWindowPlacement.BottomRightOfScreen)
             .Show(new MyUserControl("Hello Compact Window"));
     }
 
-    private void OpenDefaultWindowClick(object sender, RoutedEventArgs e)
-    {
-        // Open a default window. Do not wait for it to close
-        var window = TnWindow.Create()
-            .WithTitle("Default Window")
-            .WithSize(400, 400)
-            .Show(new MyUserControl("Hello Default Window"));
-
-        window.BringToTop();
-    }
+ 
 
     private void OpenWindowWithOwnerClick(object sender, RoutedEventArgs e)
     {
@@ -82,10 +86,20 @@ public sealed partial class MainWindow : Window
 
         // Open a default window. Do not wait for it to close
         TnWindow.Create()
-            .OwnedBy(ownerWindow)
+            .WithOwner(ownerWindow)
             .WithTitle("Owned Window")
             .WithSize(400, 400)
             .Show(new MyUserControl("Hello Owned Window"));
     }
 
+    private void OpenWindowWithIconClick(object sender, RoutedEventArgs e)
+    {
+        TnWindow.Create()
+            .WithTitle("Window With Icon")
+            .WithIcon("Icons/TestIcon.ico", desiredSize: 32)
+            .WithAlwaysOnTopBehavior(true)
+            .WithSize(600,540)
+            .WithPlacement(TnWindowPlacement.CenteredOnScreen)
+            .Show(new MyUserControl("Hello Window With Icon"));
+    }
 }

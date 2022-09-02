@@ -4,12 +4,13 @@
     mc:Ignorable="d">
 
     <Grid x:Name="LayoutRoot">
-        <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel
+            HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
             <Button HorizontalAlignment="Center" Click="OpenContentDialogClick">Open Content Dialog</Button>
+
+            <Button HorizontalAlignment="Center" Click="OpenWindowWithIconClick">Open Window With Icon</Button>
             <Button HorizontalAlignment="Center" Click="OpenModalDialogClick">Open Modal Dialog Window</Button>
             <Button HorizontalAlignment="Center" Click="OpenCompactWindowClick">Open Compact Window</Button>
-            <Button HorizontalAlignment="Center" Click="OpenDefaultWindowClick">Open Default Window</Button>
-            <Button HorizontalAlignment="Center" Click="OpenWindowWithOwnerClick">Open Owned Window</Button>
         </StackPanel>
     </Grid>
 </Window>

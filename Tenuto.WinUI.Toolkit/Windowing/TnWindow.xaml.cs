@@ -9,6 +9,14 @@ using WinRT.Interop;
 
 namespace Tenuto.WinUI.Toolkit.Windowing;
 
+public enum TnWindowPlacement
+{
+    Default,
+    CenteredOnScreen,
+    CenteredOnOwnerWindow,
+    BottomRightOfScreen,
+}
+
 public partial class TnWindow : Window
 {
     private static readonly object _LockObject = new();
@@ -16,12 +24,16 @@ public partial class TnWindow : Window
     private readonly TaskCompletionSource _closeCompletion;
 
     private readonly IntPtr _hWnd;
-    private IntPtr _hWndOwner;
-
     private readonly AppWindow _appWindow;
+    private readonly AppWindowPresenter _presenter;
+    private IntPtr _hWndOwner;
+    private double _width = 0;
+    private double _height = 0;
     private NativeIcon? _icon;
     private bool _isModal = false;
-    private readonly AppWindowPresenter _presenter;
+    private TnWindowPlacement _placement;
+
+    private bool _sizeToFitContent;
 
     private TnWindow(bool isCompact)
     {
@@ -78,15 +90,15 @@ public partial class TnWindow : Window
     public static TnWindow CreateModalDialog(IntPtr hWndOwner)
     {
         return Create()
-            .OwnedBy(hWndOwner)
+            .WithOwner(hWndOwner)
             .WithModalBehavior()
             .WithAlwaysOnTopBehavior();
     }
-  
+
     public static TnWindow CreateNonModalDialog(IntPtr hWndOwner)
     {
         return Create()
-            .OwnedBy(hWndOwner)
+            .WithOwner(hWndOwner)
             .WithAlwaysOnTopBehavior();
     }
 
@@ -135,9 +147,9 @@ public partial class TnWindow : Window
         }
     }
 
-    public TnWindow OwnedBy(Window ownerWindow) => OwnedBy(WindowNative.GetWindowHandle(ownerWindow));
+    public TnWindow WithOwner(Window ownerWindow) => WithOwner(WindowNative.GetWindowHandle(ownerWindow));
 
-    public TnWindow OwnedBy(IntPtr hWndOwner)
+    public TnWindow WithOwner(IntPtr hWndOwner)
     {
         _hWndOwner = hWndOwner;
         // HACK to set the OWNER of the window,
@@ -152,7 +164,6 @@ public partial class TnWindow : Window
         Title = title ?? "";
         return this;
     }
-
 
     public TnWindow WithModalBehavior(bool isModal = true)
     {
@@ -183,12 +194,6 @@ public partial class TnWindow : Window
         return this;
     }
 
-    public TnWindow CenteredOnScreen(double width, double height)
-    {
-        _hWnd.CenterWindowOnScreen(width, height);
-        return this;
-    }
-
     public TnWindow WithBorderAndTitleBar(bool hasBorder = true, bool hasTitleBar = true)
     {
         if (_presenter is OverlappedPresenter presenter)
@@ -199,42 +204,62 @@ public partial class TnWindow : Window
         return this;
     }
 
-    public TnWindow BottomRightAlignedOnScreen(double width, double height)
+    public TnWindow WithSizeToFitContent(bool fitsContent = true)
     {
-        _hWnd.BottomRighAlignWindowOnScreen(width, height);
+        _sizeToFitContent = fitsContent;
         return this;
     }
 
-    public TnWindow CenteredOnOwnerWindow(double width, double height)
+    public TnWindow WithPlacement(TnWindowPlacement placement)
     {
-        if (HasOwner)
-        {
-            if (Interop.GetWindowRect(_hWndOwner, out var rect))
-            {
-                _hWnd.CenterWindowInRect(width, height, rect);
-            }
-        }
-        return this;
-    }
-
-    public TnWindow CenteredInWindow(IntPtr hWnd, double width, double height)
-    {
-        if (Interop.GetWindowRect(hWnd, out var rect))
-        {
-            _hWnd.CenterWindowInRect(width, height, rect);
-        }
+        _placement = placement;
         return this;
     }
 
     public TnWindow WithSize(double width, double height)
     {
-        SetSize(width, height);
+        _width = width;
+        _height = height;
         return this;
     }
 
     public TnWindow Show(FrameworkElement content)
     {
         Content = content;
+
+        if (_sizeToFitContent)
+            SetWidthAndHeightToFitContent(3000, 3000);
+
+        if (_placement == TnWindowPlacement.Default 
+            &&_width > 0 && _height > 0)
+        {
+            _hWnd.SetWindowSize(_width, _height);
+        }
+        else
+        {
+            // Placements that need a width and a height
+            if (_width == 0 || _height == 0)
+            {
+                if (Bounds.Width > 0 && Bounds.Height > 0)
+                {
+                    _width = Bounds.Width;
+                    _height = Bounds.Height;
+                }
+                else
+                {
+                    SetWidthAndHeightToFitContent(3000, 3000);
+                }
+            }
+
+            if (_placement == TnWindowPlacement.BottomRightOfScreen)
+                _hWnd.BottomRighAlignWindowOnScreen(_width, _height);
+            else if (_placement == TnWindowPlacement.CenteredOnOwnerWindow && HasOwner)
+                DoCenterOnOwnerWindow();
+            else if (_placement == TnWindowPlacement.CenteredOnScreen)
+                _hWnd.CenterWindowOnScreen(_width, _height);
+            else
+                _hWnd.SetWindowSize(_width, _height);
+        }
 
         if (_isModal)
         {
@@ -268,11 +293,6 @@ public partial class TnWindow : Window
         _ = Interop.SetForegroundWindow(_hWnd); // activation is not enough
     }
 
-    public void SetSize(double width, double height)
-    {
-        _hWnd.SetWindowSize(width, height);
-    }
-
     public TnWindow WithoutIcon()
     {
         try
@@ -286,6 +306,7 @@ public partial class TnWindow : Window
         catch { }
         return this;
     }
+
     public TnWindow WithIcon(string iconFileName, int desiredSize = 32)
     {
         try
@@ -303,6 +324,34 @@ public partial class TnWindow : Window
     public void BringToTop()
     {
         Interop.BringWindowToTop(_hWnd);
+    }
+
+    private void SetWidthAndHeightToFitContent(double maxWidth, double maxHeight)
+    {
+        var width = maxWidth;
+        var height = maxHeight;
+
+        // Determine the desired size
+        if (Content != null)
+        {
+            Content.Measure(new Windows.Foundation.Size(maxWidth, maxHeight));
+            width = Math.Min(maxWidth, Content.DesiredSize.Width + 16);
+            height = Math.Min(maxHeight, Content.DesiredSize.Height + 40);
+        }
+
+        _width = width;
+        _height = height;
+    }
+
+    private void DoCenterOnOwnerWindow()
+    {
+        if (HasOwner)
+        {
+            if (Interop.GetWindowRect(_hWndOwner, out var rect))
+            {
+                _hWnd.CenterWindowInRect(_width, _height, rect);
+            }
+        }
     }
 
     /// <summary>
