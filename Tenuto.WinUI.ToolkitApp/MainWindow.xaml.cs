@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-using System.Diagnostics;
 using Tenuto.WinUI.Toolkit.Windowing;
 
 namespace Tenuto.WinUI.ToolkitApp;
@@ -26,7 +25,7 @@ public sealed partial class MainWindow : Window
         // Show the modal dialog and wait for it to close
         await TnWindow.CreateModalDialog(ownerWindow)
             .WithTitle("Modal Dialog Window")
-            .WithSize(360,360)
+            .WithSize(360, 360)
             .WithPlacement(TnWindowPlacement.CenteredOnOwnerWindow)
             .ShowAsync(myControl);
 
@@ -73,12 +72,12 @@ public sealed partial class MainWindow : Window
             .WithoutIcon()
             .WithOwner(this)
             .WithTitle("Compact Window")
-            .WithSize(400,300)
+            .WithSize(400, 300)
             .WithPlacement(TnWindowPlacement.BottomRightOfScreen)
             .Show(new MyUserControl("Hello Compact Window"));
     }
 
- 
+
 
     private void OpenWindowWithOwnerClick(object sender, RoutedEventArgs e)
     {
@@ -98,7 +97,7 @@ public sealed partial class MainWindow : Window
             .WithTitle("Window With Icon")
             .WithIcon("Icons/TestIcon.ico", desiredSize: 32)
             .WithAlwaysOnTopBehavior(true)
-            .WithSize(600,540)
+            .WithSize(600, 540)
             .WithPlacement(TnWindowPlacement.CenteredOnScreen)
             .Show(new MyUserControl("Hello Window With Icon"));
     }

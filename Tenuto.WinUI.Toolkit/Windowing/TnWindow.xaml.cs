@@ -29,10 +29,11 @@ public partial class TnWindow : Window
     private IntPtr _hWndOwner;
     private double _width = 0;
     private double _height = 0;
+    private double _posX = -1;
+    private double _posY = -1;
     private NativeIcon? _icon;
     private bool _isModal = false;
     private TnWindowPlacement _placement;
-
     private bool _sizeToFitContent;
 
     private TnWindow(bool isCompact)
@@ -204,12 +205,7 @@ public partial class TnWindow : Window
         return this;
     }
 
-    public TnWindow WithSizeToFitContent(bool fitsContent = true)
-    {
-        _sizeToFitContent = fitsContent;
-        return this;
-    }
-
+  
     public TnWindow WithPlacement(TnWindowPlacement placement)
     {
         _placement = placement;
@@ -223,17 +219,34 @@ public partial class TnWindow : Window
         return this;
     }
 
+    public TnWindow WithPosition(double x, double y)
+    {
+        _posX = x;
+        _posY = y;
+        return this;
+    }
+    public TnWindow WithSizeToFitContent(bool fitsContent = true)
+    {
+        _sizeToFitContent = fitsContent;
+        return this;
+    }
+
+
     public TnWindow Show(FrameworkElement content)
     {
         Content = content;
 
+
         if (_sizeToFitContent)
             SetWidthAndHeightToFitContent(3000, 3000);
 
-        if (_placement == TnWindowPlacement.Default 
-            &&_width > 0 && _height > 0)
+        if (_placement == TnWindowPlacement.Default)
         {
-            _hWnd.SetWindowSize(_width, _height);
+            if (_width > 0 && _height > 0)
+                _hWnd.SetWindowSize(_width, _height);
+
+            if (_posX > -1 && _posY > -1)
+                _hWnd.SetWindowPosition(_posX, _posY);
         }
         else
         {
@@ -257,8 +270,6 @@ public partial class TnWindow : Window
                 DoCenterOnOwnerWindow();
             else if (_placement == TnWindowPlacement.CenteredOnScreen)
                 _hWnd.CenterWindowOnScreen(_width, _height);
-            else
-                _hWnd.SetWindowSize(_width, _height);
         }
 
         if (_isModal)

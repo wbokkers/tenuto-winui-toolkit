@@ -47,6 +47,15 @@ internal static class WindowHandleExtensions
                             Interop.SWP_NOMOVE | Interop.SWP_NOACTIVATE | Interop.SWP_NOZORDER);
     }
 
+    public static void SetWindowPosition(this IntPtr hWnd, double xPos, double yPos)
+    {
+        (var x, var y) = hWnd.ToPosPixels(xPos, yPos);
+
+        Interop.SetWindowPos(hWnd, Interop.HWND_TOP,
+                            x, y, 0, 0,
+                            Interop.SWP_NOSIZE | Interop.SWP_NOACTIVATE | Interop.SWP_NOZORDER);
+    }
+
     public static double ScaleToPix(this IntPtr hwnd) => Interop.GetDpiForWindow(hwnd) / 96d;
 
     public static double ScaleToDip(this IntPtr hwnd) => 96d / Interop.GetDpiForWindow(hwnd);
@@ -77,5 +86,15 @@ internal static class WindowHandleExtensions
         var dpi = Interop.GetDpiForWindow(hwnd);
         var scalingFactor = dpi / 96d;
         return ((int)(dipWidth * scalingFactor), (int)(dipHeight * scalingFactor));
+    }
+
+    /// <summary>
+    /// Convert the specified Device Independent size to a size in pixels
+    /// </summary>
+    private static (int x, int y) ToPosPixels(this IntPtr hwnd, double dipX, double dipY)
+    {
+        var dpi = Interop.GetDpiForWindow(hwnd);
+        var scalingFactor = dpi / 96d;
+        return ((int)(dipX * scalingFactor), (int)(dipY * scalingFactor));
     }
 }
