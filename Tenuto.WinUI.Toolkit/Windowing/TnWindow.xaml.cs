@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tenuto.WinUI.Toolkit.WinApi;
+using Windows.Graphics;
 using WinRT.Interop;
 
 namespace Tenuto.WinUI.Toolkit.Windowing;
@@ -243,7 +244,11 @@ public partial class TnWindow : Window
         if (_placement == TnWindowPlacement.Default)
         {
             if (_width > 0 && _height > 0)
-                _hWnd.SetWindowSize(_width, _height);
+            {
+                var size = _hWnd.ToPixelSizeInt32(_width, _height);
+                _appWindow.ResizeClient(size);
+
+            }
 
             if (_posX > -1 && _posY > -1)
                 _hWnd.SetWindowPosition(_posX, _posY);
@@ -264,12 +269,25 @@ public partial class TnWindow : Window
                 }
             }
 
+            var size = _hWnd.ToPixelSizeInt32(_width, _height);
+
+            _appWindow.ResizeClient(size);
+
             if (_placement == TnWindowPlacement.BottomRightOfScreen)
-                _hWnd.BottomRighAlignWindowOnScreen(_width, _height);
-            else if (_placement == TnWindowPlacement.CenteredOnOwnerWindow && HasOwner)
-                DoCenterOnOwnerWindow();
+            {
+                _hWnd.BottomRighAlignWindowOnScreen(_appWindow.Size);
+            }
+            else if (_placement == TnWindowPlacement.CenteredOnOwnerWindow)
+            {
+                if (HasOwner)
+                    DoCenterOnOwnerWindow(_appWindow.Size);
+                else
+                    throw new InvalidOperationException("Cannot center on owner: no owner window set");
+            }
             else if (_placement == TnWindowPlacement.CenteredOnScreen)
-                _hWnd.CenterWindowOnScreen(_width, _height);
+            {
+                _hWnd.CenterWindowOnScreen(_appWindow.Size);
+            }
         }
 
         if (_isModal)
@@ -346,21 +364,21 @@ public partial class TnWindow : Window
         if (Content != null)
         {
             Content.Measure(new Windows.Foundation.Size(maxWidth, maxHeight));
-            width = Math.Min(maxWidth, Content.DesiredSize.Width + 16);
-            height = Math.Min(maxHeight, Content.DesiredSize.Height + 40);
+            width = Math.Min(maxWidth, Content.DesiredSize.Width);
+            height = Math.Min(maxHeight, Content.DesiredSize.Height);
         }
 
         _width = width;
         _height = height;
     }
 
-    private void DoCenterOnOwnerWindow()
+    private void DoCenterOnOwnerWindow(SizeInt32 size)
     {
         if (HasOwner)
         {
             if (Interop.GetWindowRect(_hWndOwner, out var rect))
             {
-                _hWnd.CenterWindowInRect(_width, _height, rect);
+                _hWnd.CenterWindowInRect(size, rect);
             }
         }
     }
