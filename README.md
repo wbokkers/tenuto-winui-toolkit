@@ -7,7 +7,7 @@ Tenuto.WinUI.Toolkit is a Toolkit that can be used for Windows Desktop projects 
 Current status: under construction
 
 ## Windowing
-The Toolkit demonstrates how to work with windows and dialogs in WinUI in a Builder-like way from code. I prefer this approach over using XAML with databinding, just to create a window or dialog hosting your views. Of course you can still use MVVM in your own controls and pages that are hosted in a window or dialog.
+The Toolkit demonstrates how to work with windows and dialogs in WinUI using a fluent API. I prefer this approach over using XAML with databinding, just to create a window or dialog hosting your views. Of course you can still use MVVM in your own controls and pages that are hosted in a window or dialog.
 
 To create a (modal) dialog window, you can use the TnContentDialog class. This mimics the behavior of the ContentDialog.  
 Here's an example on how to use this:
@@ -49,15 +49,14 @@ Here's an example on how to use TnWindow:
 ```csharp
 TnWindow.Create()
         .WithTitle("Window With Icon")
-        .WithIcon("Icons/TestIcon.ico", desiredSize: 32)
+        .WithIcon("Icons/TestIcon.ico")
         .WithAlwaysOnTopBehavior(true)
         .WithSize(600,540)
-        .WithPlacement(TnWindowPlacement.CenteredOnScreen)
+        .WithPosition(TnWindowPosition.CenteredOnScreen)
         .Show(new MyUserControl("Hello Window With Icon"));
 ```
 
 You can show TnWindow with a Show() or ShowAsync method. Awaiting the async method will return after the window closes.
-
 
 Inn order to close a window hosting a control from code:
 
