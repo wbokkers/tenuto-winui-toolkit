@@ -1,7 +1,8 @@
 ﻿using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using Tenuto.WinUI.Toolkit.Windowing;
+using WinRT.Interop;
 
 namespace Tenuto.WinUI.ToolkitApp;
 
@@ -11,14 +12,17 @@ public sealed partial class MainWindow : Window
     {
         this.InitializeComponent();
         _savedName = "";
+
+        var hwnd = WindowNative.GetWindowHandle(this);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        appWindow.SetIcon("Icons/TestIcon.ico");
     }
 
     private async void OpenModalDialogClick(object sender, RoutedEventArgs e)
     {
         var ownerWindow = this;
-
-        LayoutRoot.Background = new SolidColorBrush(Colors.LightGray);
-
+      
         // Create the control to show in the dialog
         var myControl = new MyUserControl("Hello Modal Dialog");
 
@@ -26,10 +30,8 @@ public sealed partial class MainWindow : Window
         await TnWindow.CreateModalDialog(ownerWindow)
             .WithTitle("Modal Dialog Window")
             .WithSize(360, 360)
-            .WithPlacement(TnWindowPlacement.CenteredOnOwnerWindow)
+            .WithPosition(TnWindowPosition.CenteredOnOwnerWindow)
             .ShowAsync(myControl);
-
-        LayoutRoot.Background = new SolidColorBrush(Colors.White);
     }
 
     private string _savedName;
@@ -73,7 +75,7 @@ public sealed partial class MainWindow : Window
             .WithOwner(this)
             .WithTitle("Compact Window")
             .WithSize(400, 300)
-            .WithPlacement(TnWindowPlacement.BottomRightOfScreen)
+            .WithPosition(TnWindowPosition.BottomRightOfScreen)
             .Show(new MyUserControl("Hello Compact Window"));
     }
 
@@ -95,10 +97,10 @@ public sealed partial class MainWindow : Window
     {
         TnWindow.Create()
             .WithTitle("Window With Icon")
-            .WithIcon("Icons/TestIcon.ico", desiredSize: 32)
+            .WithIcon("Icons/TestIcon.ico")
             .WithAlwaysOnTopBehavior(true)
             .WithSize(600, 540)
-            .WithPlacement(TnWindowPlacement.CenteredOnScreen)
+            .WithPosition(TnWindowPosition.CenteredOnScreen)
             .Show(new MyUserControl("Hello Window With Icon"));
     }
 }

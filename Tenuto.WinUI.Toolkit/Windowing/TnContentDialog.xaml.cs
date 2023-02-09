@@ -1,7 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using WinRT.Interop;
 
@@ -17,26 +16,21 @@ public enum TnContentDialogResult
 public sealed partial class TnContentDialog : UserControl
 {
     private TnContentDialogResult _result;
+    private TnWindowOptions? _options;
     private TnWindow? _window;
 
     public TnContentDialog(Window ownerWindow, bool isModal = true)
-       : this(WindowNative.GetWindowHandle(ownerWindow), isModal)
-    {
-    }
-
-    public TnContentDialog(IntPtr hWndOwner, bool isModal = true)
     {
         this.InitializeComponent();
 
-        _window = isModal
-            ? TnWindow.CreateModalDialog(hWndOwner)
-            : TnWindow.CreateNonModalDialog(hWndOwner);
-            
-        _window.WithoutIcon()
+        _options = isModal
+            ? TnWindow.CreateModalDialog(ownerWindow)
+            : TnWindow.CreateNonModalDialog(ownerWindow);
+
+        _options.WithoutIcon()
             .WithSizeToFitContent()
-            .WithPlacement(TnWindowPlacement.CenteredOnOwnerWindow);
-     
-        _window.Closed += OnWindowClosed;
+            .WithPosition(TnWindowPosition.CenteredOnOwnerWindow);
+
         _result = TnContentDialogResult.None;
 
         MaxDialogHeight = 500;
@@ -45,43 +39,22 @@ public sealed partial class TnContentDialog : UserControl
 
     private void OnWindowClosed(object sender, WindowEventArgs args)
     {
-        _window = null;
+        _options = null;
     }
 
     public async Task<TnContentDialogResult> ShowAsync()
     {
-        if (_window == null)
+        if (_options == null)
             return _result;
 
-        await _window.ShowAsync(this);
+        _window = _options.Show(this);
+        await _window.WindowClosedTask;
+
         return _result;
     }
 
-    //private void ResizeWindowForContent()
-    //{
-    //    var width = MaxDialogWidth;
-    //    var height = MaxDialogHeight;
+    public double MaxDialogWidth { get; set; }
 
-    //    // Determine the desired size
-    //    if (_window != null && Content != null)
-    //    {
-    //        var bounds = _window.Bounds;
-    //        RootGrid.Measure(new Windows.Foundation.Size(bounds.Width, bounds.Height));
-    //        width = Math.Min(MaxDialogWidth, RootGrid.DesiredSize.Width + 16);
-    //        height = Math.Min(MaxDialogHeight, RootGrid.DesiredSize.Height + 40);
-    //    }
-    //    else if (Content != null)
-    //    {
-    //        RootGrid.Measure(new Windows.Foundation.Size(MaxDialogWidth, MaxDialogHeight));
-    //        width = RootGrid.DesiredSize.Width + 16;
-    //        height = RootGrid.DesiredSize.Height + 40;
-    //    }
-
-    //    _window?.DoCenterOnOwnerWindow(width, height);
-    //}
-
-    public double MaxDialogWidth  { get;set; }
-   
     public double MaxDialogHeight { get; set; }
     public double ButtonSpacing
     {
@@ -95,7 +68,7 @@ public sealed partial class TnContentDialog : UserControl
         set
         {
             PrimaryButton.Content = value;
-            if(!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 PrimaryButton.Visibility = Visibility.Visible;
             }
@@ -124,13 +97,18 @@ public sealed partial class TnContentDialog : UserControl
         get => DialogContent.Content as UIElement;
         set => DialogContent.Content = value;
     }
-    public string Title 
+    public string Title
     {
-        get => _window != null ? _window.Title : "";
+        get => _window != null ? _window.Title
+               : _options != null ? _options.Title
+               : "";
+
         set
         {
             if (_window != null)
                 _window.Title = value;
+            else if (_options != null)
+                _options.WithTitle(value);
         }
     }
 
